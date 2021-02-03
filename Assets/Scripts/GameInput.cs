@@ -1,3 +1,4 @@
+using Assets.Scripts.Camera;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 

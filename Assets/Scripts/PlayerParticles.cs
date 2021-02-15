@@ -10,8 +10,8 @@ public class PlayerParticles : MonoBehaviour {
     public void UpdateMovementParticles(float amount)
     {
         if (_movementParticles == null) return;
-        foreach (ParticleSystem particleSystem in _movementParticles) {
-            ParticleSystem.EmissionModule emission = particleSystem.emission;
+        foreach (ParticleSystem system in _movementParticles) {
+            ParticleSystem.EmissionModule emission = system.emission;
             emission.rateOverTime = amount * _particleMultiplier;
         }
     }
@@ -19,8 +19,18 @@ public class PlayerParticles : MonoBehaviour {
     public void PlayDeathParticles()
     {
         if (_deathParticles == null) return;
-        foreach (ParticleSystem particleSystem in _deathParticles) {
-            particleSystem.Play();
+        foreach (ParticleSystem system in _deathParticles) {
+            system.Play();
+        }
+    }
+
+    public void Reset()
+    {
+        foreach (ParticleSystem system in _movementParticles) {
+            system.Clear();
+        }
+        foreach (ParticleSystem system in _deathParticles) {
+            system.Clear();
         }
     }
 }

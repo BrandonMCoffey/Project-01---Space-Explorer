@@ -4,33 +4,39 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts {
-[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Rigidbody), typeof(PowerupEffects))]
 public class PlayerShip : MonoBehaviour {
-    [Header("Player Options")] [SerializeField]
+    [Header("Player Movement")] [SerializeField]
     private float _moveSpeed = 12f;
     [SerializeField] private float _turnSpeed = 3f;
     [SerializeField] private int _respawnTimer = 3;
 
-    [Header("Player Options")] [SerializeField]
+    [Header("Player Visuals")] [SerializeField]
     private PlayerParticles _shipParticles = null;
     [SerializeField] private TrailRenderer _shipTrail = null;
 
-    [Header("Player Options")] [SerializeField]
-    private Text _speedViewText = null;
+    [Header("Player Required References")] [SerializeField]
+    private CamControl _cameraController = null;
+    [SerializeField] private Text _speedViewText = null;
     [SerializeField] private Text _respawnViewText = null;
     [SerializeField] private GameObject _winPanel = null;
 
     [HideInInspector] public bool _isAlive = true;
 
     private Rigidbody _rb;
+    private PowerupEffects _powerupEffects;
     private GameObject _art;
-    private float _bonusMoveSpeed;
+    private Vector3 _startingPosition;
+    private Quaternion _startingRotation;
     private float _respawnTimerView;
 
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
+        _powerupEffects = GetComponent<PowerupEffects>();
         _art = GameObject.Find("Art");
+        _startingPosition = transform.position;
+        _startingRotation = transform.rotation;
         if (_art == null) {
             Debug.Log("[PlayerShip] No \"Art\" game object found");
         }
@@ -41,6 +47,9 @@ public class PlayerShip : MonoBehaviour {
             _shipTrail.enabled = false;
         } else {
             Debug.Log("[PlayerShip] No \"Ship Trail\" found");
+        }
+        if (_cameraController == null) {
+            Debug.Log("[PlayerShip] No \"CamControl\" game object found");
         }
         if (_speedViewText == null) {
             Debug.Log("[PlayerShip] No \"Speed View Text\" game object found");
@@ -60,7 +69,7 @@ public class PlayerShip : MonoBehaviour {
             _shipParticles.UpdateMovementParticles((Input.GetAxisRaw("Vertical") > 0 ? Input.GetAxisRaw("Vertical") : 0) * _rb.velocity.magnitude + (forwards ? _rb.velocity.magnitude : 0));
         }
         if (_speedViewText != null) {
-            _speedViewText.text = (forwards ? "" : "-") + _rb.velocity.magnitude.ToString("F1") + " u/s";
+            _speedViewText.text = _rb.velocity.magnitude.ToString("F1") + " u/s";
         }
         if (!_isAlive && _respawnViewText != null) {
             _respawnTimerView -= Time.deltaTime;
@@ -73,12 +82,13 @@ public class PlayerShip : MonoBehaviour {
         if (!_isAlive) return;
         MoveShip();
         TurnShip();
+        ResizeShip();
     }
 
     private void MoveShip()
     {
         // S/Down = -1, W/Up = 1, None = 0. Scale by move speed
-        float moveAmountThisFrame = Input.GetAxisRaw("Vertical") * (_moveSpeed + _bonusMoveSpeed);
+        float moveAmountThisFrame = Input.GetAxisRaw("Vertical") * (_moveSpeed + _powerupEffects.GetSpeedEffect());
         // Combine our direction with our calculated amount
         Vector3 moveDirection = transform.forward * moveAmountThisFrame;
         // Apply the movement to the physics object
@@ -95,11 +105,10 @@ public class PlayerShip : MonoBehaviour {
         _rb.MoveRotation(_rb.rotation * turnOffset);
     }
 
-    public void SetSpeed(float speedChange)
+    private void ResizeShip()
     {
-        _bonusMoveSpeed += speedChange;
-        if (_bonusMoveSpeed < 0) _bonusMoveSpeed = 0;
-        // TODO: Audio and Visuals
+        float size = _powerupEffects.GetSizeEffect();
+        transform.localScale = size > 0 ? new Vector3(size, size, size) : Vector3.one;
     }
 
     public void SetBoosters(bool activeState)
@@ -110,14 +119,13 @@ public class PlayerShip : MonoBehaviour {
 
     public void Kill()
     {
+        if (!_isAlive) return;
         StartCoroutine(Respawn());
         if (_shipParticles != null) {
             _shipParticles.PlayDeathParticles();
         }
-        UnityEngine.Camera mainCamera = UnityEngine.Camera.current;
-        CameraFollow cameraFollow = mainCamera.transform.parent.GetComponent<CameraFollow>();
-        if (cameraFollow != null) {
-            StartCoroutine(cameraFollow.ResetCamera(_respawnTimer));
+        if (_cameraController != null) {
+            StartCoroutine(_cameraController.ResetCamera(_respawnTimer));
         }
     }
 
@@ -134,28 +142,40 @@ public class PlayerShip : MonoBehaviour {
         }
 
         yield return new WaitForSeconds(_respawnTimer);
-        transform.position = Vector3.zero;
-        transform.rotation = Quaternion.identity;
-        _bonusMoveSpeed = 0;
-        if (_shipTrail != null) {
-            _shipTrail.enabled = false;
-        }
-        _isAlive = true;
-        if (_respawnViewText != null) {
-            _respawnViewText.gameObject.SetActive(false);
-        }
-        if (_art != null) {
-            _art.SetActive(true);
-        }
+        Reload();
     }
 
     public void Win()
     {
         _isAlive = false;
-
-        Cursor.lockState = CursorLockMode.None;
         if (_winPanel != null) {
+            Cursor.lockState = CursorLockMode.None;
             _winPanel.SetActive(true);
+        }
+    }
+
+    public void Reload()
+    {
+        StopAllCoroutines();
+        transform.position = _startingPosition;
+        transform.rotation = _startingRotation;
+        _rb.velocity = Vector3.zero;
+        _powerupEffects.Reload();
+        _shipParticles.Reset();
+        _cameraController.StopResetting();
+        _isAlive = true;
+
+        if (_shipTrail != null) {
+            _shipTrail.enabled = false;
+        }
+        if (_winPanel != null) {
+            _winPanel.SetActive(false);
+        }
+        if (_respawnViewText != null) {
+            _respawnViewText.gameObject.SetActive(false);
+        }
+        if (_art != null) {
+            _art.SetActive(true);
         }
     }
 }

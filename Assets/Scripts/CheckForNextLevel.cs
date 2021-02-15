@@ -8,10 +8,12 @@ public class CheckForNextLevel : MonoBehaviour {
 
     private void OnEnable()
     {
-        bool nextLevelExists = SceneManager.sceneCount < SceneManager.GetActiveScene().buildIndex + 1;
+        bool nextLevelExists = SceneManager.sceneCountInBuildSettings > SceneManager.GetActiveScene().buildIndex + 1;
         if (GetComponent<Image>() && GetComponent<Button>()) {
             GetComponent<Button>().interactable = nextLevelExists;
-            GetComponent<Image>().color = _disabledColor;
+            if (!nextLevelExists) {
+                GetComponent<Image>().color = _disabledColor;
+            }
         } else {
             gameObject.SetActive(nextLevelExists);
         }

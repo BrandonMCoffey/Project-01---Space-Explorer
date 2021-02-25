@@ -90,7 +90,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _powerup: 1
-  _powerupRespawnTime: 6
+  _powerupRespawnTime: 16
   _visualsToDeactivate: {fileID: 6117123522337966069}
 --- !u!1 &6117123524008829718
 GameObject:

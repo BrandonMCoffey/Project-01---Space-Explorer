@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7422689646400507277}
   - component: {fileID: 7422689646400507266}
   - component: {fileID: 7422689646400507267}
-  - component: {fileID: 7422689646400507276}
+  - component: {fileID: -17536102337772229}
   m_Layer: 0
   m_Name: Debris
   m_TagString: Untagged
@@ -82,7 +82,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &7422689646400507276
+--- !u!65 &-17536102337772229
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

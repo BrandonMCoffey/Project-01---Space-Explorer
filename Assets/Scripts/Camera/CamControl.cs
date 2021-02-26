@@ -5,24 +5,28 @@ using UnityEngine;
 namespace Assets.Scripts.Camera {
     public class CamControl : MonoBehaviour {
         [SerializeField] private CamShake _cameraShake = null;
-        [SerializeField] private float _cameraSmoothing = 0.1f;
         [SerializeField] private List<CamFollow> _cameras = new List<CamFollow>();
 
         private Transform _cameraToFollow;
         private int _cameraToFollowIndex;
+        private float _cameraSmoothing;
 
         private Vector3 _desiredPosition;
         private Vector3 _smoothedPosition;
         private Quaternion _desiredRotation;
         private Quaternion _smoothedRotation;
 
+        private Coroutine _adjustSmoothing;
+
         private void Awake()
         {
+            _cameraToFollowIndex = PlayerPrefs.GetInt("CameraToFollow");
             if (_cameras != null) {
-                _cameraToFollow = _cameras[0].GetTransform();
+                _cameraToFollow = _cameras[_cameraToFollowIndex].GetTransform();
                 if (_cameraShake != null) {
-                    _cameraShake.SetMagnitude(_cameras[0]._cameraShakeOverride);
+                    _cameraShake.SetMagnitude(_cameras[_cameraToFollowIndex]._cameraShakeOverride);
                 }
+                _cameraSmoothing = _cameras[_cameraToFollowIndex]._cameraSmoothness;
             } else {
                 Debug.Log("CamControl: No Attached Cameras on \"" + gameObject.name + "\"");
             }
@@ -63,9 +67,28 @@ namespace Assets.Scripts.Camera {
             }
 
             // Activate the new active camera
+            PlayerPrefs.SetInt("CameraToFollow", _cameraToFollowIndex);
             _cameraToFollow = _cameras[_cameraToFollowIndex].GetTransform();
             if (_cameraShake != null) {
                 _cameraShake.SetMagnitude(_cameras[_cameraToFollowIndex]._cameraShakeOverride);
+            }
+            if (_adjustSmoothing != null) {
+                StopCoroutine(_adjustSmoothing);
+            }
+            _adjustSmoothing = StartCoroutine(AdjustSmoothing(_cameras[_cameraToFollowIndex]._cameraSmoothness));
+        }
+
+        private IEnumerator AdjustSmoothing(float value)
+        {
+            if (_cameraSmoothing < value) {
+                for (float t = 0f; t <= 0.5f; t += Time.deltaTime) {
+                    _cameraSmoothing = Mathf.Lerp(_cameraSmoothing, value, t / 100);
+                    yield return null;
+                }
+                _cameraSmoothing = value;
+            } else {
+                _cameraSmoothing = value;
+                yield return null;
             }
         }
 

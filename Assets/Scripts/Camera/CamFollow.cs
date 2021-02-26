@@ -8,6 +8,7 @@ namespace Assets.Scripts.Camera {
         [Header("Settings")]
         [SerializeField] private bool _rotateWithObject = false;
         [SerializeField] private float _predictiveFollow = 0;
+        public float _cameraSmoothness = 0.1f;
         [SerializeField] private bool _canZoom = true;
         [SerializeField] private float _minZoom = 0.5f;
         [SerializeField] private float _maxZoom = 2.5f;

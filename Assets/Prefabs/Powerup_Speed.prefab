@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6019549132666292257}
+  - component: {fileID: 2026972296702641112}
   m_Layer: 0
   m_Name: Art
   m_TagString: Untagged
@@ -31,6 +32,18 @@ Transform:
   m_Father: {fileID: 6019549133005637829}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!122 &2026972296702641112
+Halo:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6019549132666292256}
+  m_Enabled: 1
+  m_Color:
+    serializedVersion: 2
+    rgba: 4281675795
+  m_Size: 1.5
 --- !u!1 &6019549133005637835
 GameObject:
   m_ObjectHideFlags: 0
@@ -89,8 +102,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9042d398df4fa346ba89664e38280ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _speedIncreaseAmount: 20
-  _powerupDuration: 5
+  _powerup: 0
+  _powerupRespawnTime: 8
   _visualsToDeactivate: {fileID: 6019549132666292256}
 --- !u!1 &6019549134318120131
 GameObject:

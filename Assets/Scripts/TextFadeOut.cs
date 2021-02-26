@@ -1,15 +1,16 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts {
-    [RequireComponent(typeof(Text))]
+    [RequireComponent(typeof(TextMeshProUGUI))]
     public class TextFadeOut : MonoBehaviour {
-        private Text _text;
+        private TextMeshProUGUI _text;
 
         public void Awake()
         {
-            _text = GetComponent<Text>();
+            _text = GetComponent<TextMeshProUGUI>();
         }
 
         public void StartFadeOut(float t, bool destroy = true)

@@ -1,37 +1,78 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts {
-public class PlayerParticles : MonoBehaviour {
-    [SerializeField] private float _particleMultiplier = 2;
-    [SerializeField] private List<ParticleSystem> _movementParticles = null;
-    [SerializeField] private List<ParticleSystem> _deathParticles = null;
+    public class PlayerParticles : MonoBehaviour {
+        [SerializeField] private float _particleMultiplier = 2;
+        [SerializeField] private List<ParticleSystem> _movementParticles = null;
+        [SerializeField] private List<ParticleSystem.MinMaxGradient> _boostColors = null;
+        [SerializeField] private List<ParticleSystem> _boostParticles = null;
+        [SerializeField] private List<ParticleSystem> _sizeChangeParticles = null;
+        [SerializeField] private List<ParticleSystem> _deathParticles = null;
 
-    public void UpdateMovementParticles(float amount)
-    {
-        if (_movementParticles == null) return;
-        foreach (ParticleSystem system in _movementParticles) {
-            ParticleSystem.EmissionModule emission = system.emission;
-            emission.rateOverTime = amount * _particleMultiplier;
+        private int _currentBoostLevel;
+
+        private void Start()
+        {
+            ChangeColor(0);
+        }
+
+        public void UpdateMovementParticles(float amount)
+        {
+            if (_movementParticles == null) return;
+            foreach (ParticleSystem system in _movementParticles) {
+                ParticleSystem.EmissionModule emission = system.emission;
+                emission.rateOverTime = amount * _particleMultiplier;
+            }
+        }
+
+        public void PlayBoostParticles()
+        {
+            if (_boostParticles == null) return;
+            foreach (ParticleSystem system in _boostParticles) {
+                system.Play();
+            }
+        }
+
+        public void PlaySizeChangeParticles()
+        {
+            if (_sizeChangeParticles == null) return;
+            foreach (ParticleSystem system in _sizeChangeParticles) {
+                system.Play();
+            }
+        }
+
+        public void PlayDeathParticles()
+        {
+            if (_deathParticles == null) return;
+            foreach (ParticleSystem system in _deathParticles) {
+                system.Play();
+            }
+        }
+
+        public void ChangeColor(int multiplier)
+        {
+            if (_boostColors == null || _boostColors.Count <= _currentBoostLevel + multiplier || _currentBoostLevel + multiplier < 0) return;
+            if (multiplier == 0) {
+                _currentBoostLevel = 0;
+            } else {
+                _currentBoostLevel += multiplier;
+            }
+            foreach (ParticleSystem system in _movementParticles) {
+                ParticleSystem.ColorOverLifetimeModule module = system.colorOverLifetime;
+                module.color = _boostColors[_currentBoostLevel];
+            }
+        }
+
+        public void Reload()
+        {
+            foreach (ParticleSystem system in _movementParticles) {
+                system.Clear();
+            }
+            foreach (ParticleSystem system in _deathParticles) {
+                system.Clear();
+            }
         }
     }
-
-    public void PlayDeathParticles()
-    {
-        if (_deathParticles == null) return;
-        foreach (ParticleSystem system in _deathParticles) {
-            system.Play();
-        }
-    }
-
-    public void Reset()
-    {
-        foreach (ParticleSystem system in _movementParticles) {
-            system.Clear();
-        }
-        foreach (ParticleSystem system in _deathParticles) {
-            system.Clear();
-        }
-    }
-}
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using Assets.Scripts.Camera;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,21 +14,21 @@ namespace Assets.Scripts {
 
         [Header("Player Visuals")] [SerializeField]
         private PlayerParticles _shipParticles = null;
-        [SerializeField] private TrailRenderer _shipTrail = null;
 
         [Header("Player Required References")] [SerializeField]
         private CamControl _cameraController = null;
         [SerializeField] private ScreenFlash _screenFlash = null;
         [SerializeField] private CamShake _cameraShake = null;
-        [SerializeField] private Text _speedViewText = null;
-        [SerializeField] private Text _respawnViewText = null;
+        [SerializeField] private TextMeshProUGUI _speedViewText = null;
+        [SerializeField] private TextMeshProUGUI _respawnViewText = null;
         [SerializeField] private GameObject _winPanel = null;
 
         [HideInInspector] public bool _isAlive = true;
 
         private Rigidbody _rb;
-        private PowerupEffects _powerupEffects;
         private GameObject _art;
+        private PowerupEffects _powerupEffects;
+        private float _currentSpeedBoost;
         private Vector3 _startingPosition;
         private Quaternion _startingRotation;
         private float _startingDrag;
@@ -46,11 +47,6 @@ namespace Assets.Scripts {
             }
             if (_shipParticles == null) {
                 Debug.Log("[PlayerShip] No \"Ship Particles\" found");
-            }
-            if (_shipTrail != null) {
-                _shipTrail.enabled = false;
-            } else {
-                Debug.Log("[PlayerShip] No \"Ship Trail\" found");
             }
             if (_cameraController == null) {
                 Debug.Log("[PlayerShip] No \"CamControl\" game object found");
@@ -75,11 +71,13 @@ namespace Assets.Scripts {
         private void OnEnable()
         {
             _powerupEffects.SizeChange += ResizeShip;
+            _powerupEffects.SpeedBoost += SetBoosters;
         }
 
         private void OnDisable()
         {
             _powerupEffects.SizeChange -= ResizeShip;
+            _powerupEffects.SpeedBoost -= SetBoosters;
         }
 
         private void Update()
@@ -89,7 +87,7 @@ namespace Assets.Scripts {
                 _shipParticles.UpdateMovementParticles((Input.GetAxisRaw("Vertical") > 0 ? Input.GetAxisRaw("Vertical") : 0) * _rb.velocity.magnitude + (forwards ? _rb.velocity.magnitude : 0));
             }
             if (_speedViewText != null) {
-                _speedViewText.text = _rb.velocity.magnitude.ToString("F1") + " u/s";
+                _speedViewText.text = (_rb.velocity.magnitude * 20 / 23.7).ToString("F1") + " u/s";
             }
             if (!_isAlive && _respawnViewText != null) {
                 _respawnTimerView -= Time.deltaTime;
@@ -113,7 +111,7 @@ namespace Assets.Scripts {
         private void MoveShip()
         {
             // S/Down = -1, W/Up = 1, None = 0. Scale by move speed
-            float moveAmountThisFrame = Input.GetAxisRaw("Vertical") * (_moveSpeed + _powerupEffects.GetSpeedEffect());
+            float moveAmountThisFrame = Input.GetAxisRaw("Vertical") * (_moveSpeed + _currentSpeedBoost);
             // Combine our direction with our calculated amount
             Vector3 moveDirection = transform.forward * moveAmountThisFrame;
             // Apply the movement to the physics object
@@ -132,13 +130,22 @@ namespace Assets.Scripts {
 
         private void ResizeShip(float size)
         {
+            _shipParticles.PlaySizeChangeParticles();
             transform.localScale = new Vector3(size, size, size);
         }
 
-        public void SetBoosters(bool activeState)
+        public void SetBoosters(float boost)
         {
-            if (_shipTrail == null) return;
-            _shipTrail.enabled = activeState;
+            _shipParticles.ChangeColor(boost == 0 ? 0 : _currentSpeedBoost < boost ? 1 : -1);
+            if (_currentSpeedBoost < boost) {
+                _shipParticles.PlayBoostParticles();
+                float vel = _rb.velocity.magnitude;
+                if (vel < 4) vel = 4;
+                _rb.velocity = transform.forward * vel + transform.forward * boost / 2;
+            } else {
+                _rb.velocity -= transform.forward * boost;
+            }
+            _currentSpeedBoost = boost;
         }
 
         public void Kill()
@@ -197,12 +204,9 @@ namespace Assets.Scripts {
             MoveToStartingPosition();
             StopAllCoroutines();
             _powerupEffects.Reload();
-            _shipParticles.Reset();
+            _shipParticles.Reload();
             _isAlive = true;
 
-            if (_shipTrail != null) {
-                _shipTrail.enabled = false;
-            }
             if (_winPanel != null) {
                 _winPanel.SetActive(false);
             }

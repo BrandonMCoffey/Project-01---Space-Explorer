@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6117123522337966068}
+  - component: {fileID: 6710942952823433541}
   m_Layer: 0
   m_Name: Art
   m_TagString: Untagged
@@ -31,6 +32,18 @@ Transform:
   m_Father: {fileID: 6117123523082061584}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!122 &6710942952823433541
+Halo:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6117123522337966069}
+  m_Enabled: 1
+  m_Color:
+    serializedVersion: 2
+    rgba: 4281289056
+  m_Size: 1.5
 --- !u!1 &6117123523082061598
 GameObject:
   m_ObjectHideFlags: 0

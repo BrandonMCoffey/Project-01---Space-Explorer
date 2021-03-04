@@ -108,7 +108,7 @@ namespace Assets.Scripts {
             _bluePowerupAmount = 0;
             _orangePowerupAmount = 0;
             SpeedBoost?.Invoke(_speedBoostAmount = 0);
-            SizeChange?.Invoke(_sizeChangeAmount = 1);
+            _sizeChangeAmount = 1;
             int powerupTextCount = _powerupTexts.Count;
             for (int i = 0; i < powerupTextCount; i++) {
                 Destroy(_powerupTexts[0]);

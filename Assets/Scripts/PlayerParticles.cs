@@ -9,6 +9,7 @@ namespace Assets.Scripts {
         [SerializeField] private List<ParticleSystem.MinMaxGradient> _boostColors = null;
         [SerializeField] private List<ParticleSystem> _boostParticles = null;
         [SerializeField] private List<ParticleSystem> _sizeChangeParticles = null;
+        [SerializeField] private List<ParticleSystem> _laserHitParticles = null;
         [SerializeField] private List<ParticleSystem> _deathParticles = null;
 
         private int _currentBoostLevel;
@@ -40,6 +41,15 @@ namespace Assets.Scripts {
             if (_sizeChangeParticles == null) return;
             foreach (ParticleSystem system in _sizeChangeParticles) {
                 system.Play();
+            }
+        }
+
+        public void PlayLaserHitParticles(Vector3 position)
+        {
+            if (_laserHitParticles == null) return;
+            foreach (ParticleSystem system in _laserHitParticles) {
+                system.transform.position = position;
+                system.Emit(Mathf.CeilToInt(system.emission.rateOverTime.constant));
             }
         }
 

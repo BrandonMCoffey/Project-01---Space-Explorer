@@ -5,7 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts {
-    [RequireComponent(typeof(Rigidbody), typeof(PowerupEffects))]
+    [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(PowerupEffects), typeof(WeaponSystem))]
     public class PlayerShip : MonoBehaviour {
         [Header("Player Movement")] [SerializeField]
         private float _moveSpeed = 12f;
@@ -28,6 +29,7 @@ namespace Assets.Scripts {
         private Rigidbody _rb;
         private GameObject _art;
         private PowerupEffects _powerupEffects;
+        private WeaponSystem _weaponSystem;
         private float _currentSpeedBoost;
         private Vector3 _startingPosition;
         private Quaternion _startingRotation;
@@ -38,6 +40,7 @@ namespace Assets.Scripts {
         {
             _rb = GetComponent<Rigidbody>();
             _powerupEffects = GetComponent<PowerupEffects>();
+            _weaponSystem = GetComponent<WeaponSystem>();
             _art = GameObject.Find("Art");
             _startingPosition = transform.position;
             _startingRotation = transform.rotation;
@@ -128,6 +131,13 @@ namespace Assets.Scripts {
             _rb.MoveRotation(_rb.rotation * turnOffset);
         }
 
+        public void FireWeapon()
+        {
+            Vector3 hitPosition = _weaponSystem.Fire();
+            _shipParticles.PlayLaserHitParticles(hitPosition);
+            _rb.velocity -= transform.forward / 2;
+        }
+
         private void ResizeShip(float size)
         {
             _shipParticles.PlaySizeChangeParticles();
@@ -195,6 +205,7 @@ namespace Assets.Scripts {
         {
             transform.position = _startingPosition;
             transform.rotation = _startingRotation;
+            transform.localScale = Vector3.one;
             _rb.velocity = Vector3.zero;
             _rb.drag = _startingDrag;
         }

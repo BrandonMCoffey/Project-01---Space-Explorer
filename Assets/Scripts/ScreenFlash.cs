@@ -7,7 +7,7 @@ namespace Assets.Scripts {
     [RequireComponent(typeof(Image))]
     public class ScreenFlash : MonoBehaviour {
         [SerializeField] private float _secondsForOneFlash = 2f;
-        [SerializeField] [Range(0, 1)] private float _minAlpha = 0f;
+        [SerializeField] [Range(0, 1)] private float _minAlpha;
         [SerializeField] [Range(0, 1)] private float _maxAlpha = 1f;
 
         private event Action FlashAgain = delegate { };
@@ -76,6 +76,10 @@ namespace Assets.Scripts {
                 _image.color = newColor;
                 yield return null;
             }
+
+            Color resetColor = _image.color;
+            resetColor.a = minAlpha;
+            _image.color = resetColor;
 
             if (_flashesRemaining > 0) {
                 FlashAgain?.Invoke();

@@ -7,8 +7,9 @@ namespace Assets.Scripts {
         [SerializeField] private bool _lockMouseInGame = true;
         [SerializeField] private KeyCode _exitGame = KeyCode.Escape;
         [SerializeField] private KeyCode _reloadLevelKey = KeyCode.Backspace;
-        [SerializeField] private bool _reloadEntireScene = true;
+        [SerializeField] private bool _reloadEntireScene = false;
         [SerializeField] private PlayerShip _playerShip = null;
+        [SerializeField] private KeyCode _fireWeapon = KeyCode.Space;
         [SerializeField] private CamControl _cameraController = null;
         [SerializeField] private KeyCode _zoomInKey = KeyCode.Equals;
         [SerializeField] private KeyCode _zoomOutKey = KeyCode.Minus;
@@ -39,6 +40,10 @@ namespace Assets.Scripts {
             }
             if (Input.GetKeyDown(_reloadLevelKey)) {
                 ReloadLevel();
+            }
+
+            if (Input.GetKeyDown(_fireWeapon)) {
+                _playerShip.FireWeapon();
             }
 
             if (_cameraController != null) {

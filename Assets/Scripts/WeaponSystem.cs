@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
@@ -25,7 +24,12 @@ namespace Assets.Scripts {
         {
             Physics.Raycast(transform.position, transform.forward, out var hit, Mathf.Infinity);
             if (_objectsToHit == (_objectsToHit | (1 << hit.transform.gameObject.layer))) {
-                Destroy(hit.transform.gameObject);
+                EnemyAI enemyAI = hit.transform.GetComponent<EnemyAI>();
+                if (enemyAI != null) {
+                    enemyAI.Kill();
+                } else {
+                    hit.transform.gameObject.SetActive(false);
+                }
             }
 
             if (_instantLaser == null) {

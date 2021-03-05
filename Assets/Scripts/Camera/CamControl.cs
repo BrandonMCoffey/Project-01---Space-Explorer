@@ -4,8 +4,11 @@ using UnityEngine;
 
 namespace Assets.Scripts.Camera {
     public class CamControl : MonoBehaviour {
-        [SerializeField] private CamShake _cameraShake = null;
+        public CamShake _cameraShake = null;
+
         [SerializeField] private List<CamFollow> _cameras = new List<CamFollow>();
+
+        [HideInInspector] public bool _zoomWithMouseWheel;
 
         private Transform _cameraToFollow;
         private int _cameraToFollowIndex;
@@ -48,6 +51,10 @@ namespace Assets.Scripts.Camera {
         {
             transform.position = _smoothedPosition;
             transform.rotation = _smoothedRotation;
+
+            if (_zoomWithMouseWheel) {
+                GameController._instance._cameraController.Zoom(-Input.GetAxisRaw("Mouse ScrollWheel"));
+            }
         }
 
         public void Zoom(float amount)

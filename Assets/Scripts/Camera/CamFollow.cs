@@ -2,9 +2,6 @@ using UnityEngine;
 
 namespace Assets.Scripts.Camera {
     public class CamFollow : MonoBehaviour {
-        [Header("Required References")]
-        [SerializeField] private Transform _objectToFollow = null;
-
         [Header("Settings")]
         [SerializeField] private bool _rotateWithObject = false;
         [SerializeField] private float _predictiveFollow = 0;
@@ -18,11 +15,14 @@ namespace Assets.Scripts.Camera {
         public float _cameraShakeOverride = 1;
 
         [HideInInspector] public Vector3 _objectOffset;
-        private Rigidbody _objectToFollowRigidbody = null;
+
+        private Transform _objectToFollow;
+        private Rigidbody _objectToFollowRigidbody;
         private float _currentZoom = 1f;
 
-        private void OnEnable()
+        private void Start()
         {
+            _objectToFollow = GameController._instance._playerShip.transform;
             if (_objectToFollow != null) {
                 // Create an offset between this position and the other object's position
                 _objectOffset = transform.position - _objectToFollow.position;
@@ -35,7 +35,6 @@ namespace Assets.Scripts.Camera {
 
         private void FixedUpdate()
         {
-            if (_objectToFollow == null) return;
             // Apply the offset every frame, to reposition this object
             if (_objectToFollowRigidbody != null) {
                 Vector3 predictiveFollow = _objectToFollow.forward * Input.GetAxis("Vertical") * _objectToFollowRigidbody.velocity.magnitude * _predictiveFollow;

@@ -1,35 +1,27 @@
 using System.Collections;
-using Assets.Scripts.Camera;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Assets.Scripts {
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(PowerupEffects), typeof(WeaponSystem))]
     public class PlayerShip : MonoBehaviour {
-        [Header("Player Movement")] [SerializeField]
-        private float _moveSpeed = 12f;
+        [Header("Player Movement")]
+        [SerializeField] private float _moveSpeed = 12f;
         [SerializeField] private float _turnSpeed = 3f;
         [SerializeField] private int _respawnTimer = 3;
 
-        [Header("Player Visuals")] [SerializeField]
-        private PlayerParticles _shipParticles = null;
-
-        [Header("Player Required References")] [SerializeField]
-        private CamControl _cameraController = null;
-        [SerializeField] private ScreenFlash _screenFlash = null;
-        [SerializeField] private CamShake _cameraShake = null;
-        [SerializeField] private TextMeshProUGUI _speedViewText = null;
-        [SerializeField] private TextMeshProUGUI _respawnViewText = null;
-        [SerializeField] private GameObject _winPanel = null;
+        [Header("Player Visuals")]
+        [SerializeField] private GameObject _artToDisable = null;
+        [SerializeField] private PlayerParticles _shipParticles = null;
 
         [HideInInspector] public bool _isAlive = true;
 
         private Rigidbody _rb;
-        private GameObject _art;
         private PowerupEffects _powerupEffects;
         private WeaponSystem _weaponSystem;
+        private CanvasController _canvasController;
+
         private float _currentSpeedBoost;
         private Vector3 _startingPosition;
         private Quaternion _startingRotation;
@@ -41,33 +33,14 @@ namespace Assets.Scripts {
             _rb = GetComponent<Rigidbody>();
             _powerupEffects = GetComponent<PowerupEffects>();
             _weaponSystem = GetComponent<WeaponSystem>();
-            _art = GameObject.Find("Art");
             _startingPosition = transform.position;
             _startingRotation = transform.rotation;
             _startingDrag = _rb.drag;
-            if (_art == null) {
+            if (_artToDisable == null) {
                 Debug.Log("[PlayerShip] No \"Art\" game object found");
             }
             if (_shipParticles == null) {
                 Debug.Log("[PlayerShip] No \"Ship Particles\" found");
-            }
-            if (_cameraController == null) {
-                Debug.Log("[PlayerShip] No \"CamControl\" game object found");
-            }
-            if (_screenFlash == null) {
-                Debug.Log("[PlayerShip] No \"Screen Flash\" image found");
-            }
-            if (_cameraShake == null) {
-                Debug.Log("[PlayerShip] No \"Camera Shake\" found");
-            }
-            if (_speedViewText == null) {
-                Debug.Log("[PlayerShip] No \"Speed View Text\" game object found");
-            }
-            if (_respawnViewText == null) {
-                Debug.Log("[PlayerShip] No \"Respawn View Text\" game object found");
-            }
-            if (_winPanel == null) {
-                Debug.Log("[PlayerShip] No \"Win Panel\" game object found");
             }
         }
 
@@ -83,18 +56,21 @@ namespace Assets.Scripts {
             _powerupEffects.SpeedBoost -= SetBoosters;
         }
 
+        private void Start()
+        {
+            _canvasController = GameController._instance._canvasController;
+        }
+
         private void Update()
         {
             bool forwards = (_rb.velocity.normalized - transform.forward).magnitude < 1;
             if (_shipParticles != null) {
                 _shipParticles.UpdateMovementParticles((Input.GetAxisRaw("Vertical") > 0 ? Input.GetAxisRaw("Vertical") : 0) * _rb.velocity.magnitude + (forwards ? _rb.velocity.magnitude : 0));
             }
-            if (_speedViewText != null) {
-                _speedViewText.text = (_rb.velocity.magnitude * 20 / 23.7).ToString("F1") + " u/s";
-            }
-            if (!_isAlive && _respawnViewText != null) {
+            _canvasController.SetSpeedViewText((_rb.velocity.magnitude * 20 / 23.7).ToString("F1") + " u/s");
+            if (!_isAlive) {
                 _respawnTimerView -= Time.deltaTime;
-                _respawnViewText.text = "Respawning in " + _respawnTimerView.ToString("F0") + "...";
+                _canvasController.SetRespawnViewText("Respawning in " + _respawnTimerView.ToString("F0") + "...");
             }
         }
 
@@ -107,8 +83,8 @@ namespace Assets.Scripts {
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (_cameraShake == null || !_isAlive) return;
-            _cameraShake.ShakeCamera(collision.impulse.magnitude);
+            if (!_isAlive) return;
+            GameController._instance._cameraController._cameraShake.ShakeCamera(collision.impulse.magnitude);
         }
 
         private void MoveShip()
@@ -133,6 +109,7 @@ namespace Assets.Scripts {
 
         public void FireWeapon()
         {
+            if (!_isAlive) return;
             Vector3 hitPosition = _weaponSystem.Fire();
             _shipParticles.PlayLaserHitParticles(hitPosition);
             _rb.velocity -= transform.forward / 2;
@@ -165,12 +142,8 @@ namespace Assets.Scripts {
             if (_shipParticles != null) {
                 _shipParticles.PlayDeathParticles();
             }
-            if (_screenFlash != null) {
-                _screenFlash.Flash(1);
-            }
-            if (_cameraShake != null) {
-                _cameraShake.ShakeCamera();
-            }
+            _canvasController.FlashScreen();
+            GameController._instance._cameraController._cameraShake.ShakeCamera();
         }
 
         private IEnumerator Respawn()
@@ -178,11 +151,9 @@ namespace Assets.Scripts {
             _rb.velocity = Vector3.zero;
             _isAlive = false;
             _respawnTimerView = _respawnTimer;
-            if (_respawnViewText != null) {
-                _respawnViewText.gameObject.SetActive(true);
-            }
-            if (_art != null) {
-                _art.SetActive(false);
+            _canvasController.EnableRespawnViewText();
+            if (_artToDisable != null) {
+                _artToDisable.SetActive(false);
             }
 
             yield return new WaitForSeconds(_respawnTimer - 1);
@@ -195,10 +166,8 @@ namespace Assets.Scripts {
         {
             _isAlive = false;
             _rb.drag = _startingDrag * 6f;
-            if (_winPanel != null) {
-                Cursor.lockState = CursorLockMode.None;
-                _winPanel.SetActive(true);
-            }
+            Cursor.lockState = CursorLockMode.None;
+            _canvasController.EnableWinPanel();
         }
 
         public void MoveToStartingPosition()
@@ -217,15 +186,10 @@ namespace Assets.Scripts {
             _powerupEffects.Reload();
             _shipParticles.Reload();
             _isAlive = true;
-
-            if (_winPanel != null) {
-                _winPanel.SetActive(false);
-            }
-            if (_respawnViewText != null) {
-                _respawnViewText.gameObject.SetActive(false);
-            }
-            if (_art != null) {
-                _art.SetActive(true);
+            _canvasController.EnableWinPanel(false);
+            _canvasController.EnableRespawnViewText(false);
+            if (_artToDisable != null) {
+                _artToDisable.SetActive(true);
             }
         }
     }

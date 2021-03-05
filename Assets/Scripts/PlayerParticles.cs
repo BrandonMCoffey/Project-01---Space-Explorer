@@ -9,13 +9,16 @@ namespace Assets.Scripts {
         [SerializeField] private List<ParticleSystem> _boostParticles = null;
         [SerializeField] private List<ParticleSystem> _sizeChangeParticles = null;
         [SerializeField] private List<ParticleSystem> _laserHitParticles = null;
+        [SerializeField] private List<ParticleSystem.MinMaxGradient> _laserBoostColors = null;
         [SerializeField] private List<ParticleSystem> _deathParticles = null;
 
         private int _currentBoostLevel;
+        private int _currentLaserLevel;
 
         private void Start()
         {
-            ChangeColor(0);
+            ChangeBoostColor(0);
+            ChangeLaserColor(0);
         }
 
         public void UpdateMovementParticles(float amount)
@@ -43,7 +46,7 @@ namespace Assets.Scripts {
             }
         }
 
-        public void PlayLaserHitParticles(Vector3 position)
+        public void PlayLaserHitParticles(Vector3 position, bool boosted)
         {
             if (_laserHitParticles == null) return;
             foreach (ParticleSystem system in _laserHitParticles) {
@@ -60,7 +63,7 @@ namespace Assets.Scripts {
             }
         }
 
-        public void ChangeColor(int multiplier)
+        public void ChangeBoostColor(int multiplier)
         {
             if (_boostColors == null || _boostColors.Count <= _currentBoostLevel + multiplier || _currentBoostLevel + multiplier < 0) return;
             if (multiplier == 0) {
@@ -71,6 +74,20 @@ namespace Assets.Scripts {
             foreach (ParticleSystem system in _movementParticles) {
                 ParticleSystem.ColorOverLifetimeModule module = system.colorOverLifetime;
                 module.color = _boostColors[_currentBoostLevel];
+            }
+        }
+
+        public void ChangeLaserColor(int multiplier)
+        {
+            if (_laserBoostColors == null || _laserBoostColors.Count <= _currentLaserLevel + multiplier || _currentLaserLevel + multiplier < 0) return;
+            if (multiplier == 0) {
+                _currentLaserLevel = 0;
+            } else {
+                _currentLaserLevel += multiplier;
+            }
+            foreach (ParticleSystem system in _laserHitParticles) {
+                ParticleSystem.MainModule module = system.main;
+                module.startColor = _laserBoostColors[_currentLaserLevel];
             }
         }
 

@@ -10,6 +10,7 @@ namespace Assets.Scripts {
         [SerializeField] private float _lostRadius = 15f;
         [SerializeField] private float _stoppingDistance = 4f;
         [SerializeField] private float _bufferDistance = 1f;
+        [SerializeField] private bool _canFireLaser = false;
 
         private Rigidbody _rigidbody;
         private Collider[] _colliders;

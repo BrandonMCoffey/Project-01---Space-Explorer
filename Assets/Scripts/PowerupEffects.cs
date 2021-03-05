@@ -7,7 +7,8 @@ using UnityEngine;
 namespace Assets.Scripts {
     public enum AffectedProperties {
         Speed,
-        Size
+        Size,
+        Laser
     }
 
     public class PowerupEffects : MonoBehaviour {
@@ -23,21 +24,38 @@ namespace Assets.Scripts {
         [SerializeField] private float _orangeEffectDuration = 4f;
         [SerializeField] private string _orangeEffectText = "Size Increase";
 
-        [Header("Text")]
+        [Header("Purple Powerup")]
+        [SerializeField] private AffectedProperties _purpleEffectedProperty = AffectedProperties.Laser;
+        [SerializeField] private float _purpleEffectDuration = 4f;
+        [SerializeField] private string _purpleEffectText = "Powered Up Laser";
+
+        [Header("Other")]
+        [SerializeField] private AudioClip _clip = null;
         [SerializeField] private float _textFadeTime = 3f;
 
         public event Action<float> SizeChange = delegate { };
         public event Action<float> SpeedBoost = delegate { };
+        public event Action<bool> LaserBoost = delegate { };
         private float _sizeChangeAmount = 1;
         private float _speedBoostAmount;
 
         private int _bluePowerupAmount;
         private int _orangePowerupAmount;
+        private int _purplePowerupAmount;
 
         private List<GameObject> _powerupTexts = new List<GameObject>();
 
+        private AudioSource _source;
+
+        private void Awake()
+        {
+            _source = GetComponent<AudioSource>();
+        }
+
         public void ActivateBluePowerup()
         {
+            _source.clip = _clip;
+            _source.Play();
             StartCoroutine(BluePowerupEffects());
         }
 
@@ -53,6 +71,8 @@ namespace Assets.Scripts {
 
         public void ActivateOrangePowerup()
         {
+            _source.clip = _clip;
+            _source.Play();
             StartCoroutine(OrangePowerupEffects());
         }
 
@@ -66,6 +86,23 @@ namespace Assets.Scripts {
             TriggerEffects(_orangeEffectedProperty, _orangeEffectAmount, false);
         }
 
+        public void ActivatePurplePowerup()
+        {
+            _source.clip = _clip;
+            _source.Play();
+            StartCoroutine(PurplePowerupEffects());
+        }
+
+        private IEnumerator PurplePowerupEffects()
+        {
+            _purplePowerupAmount++;
+            TriggerEffects(_purpleEffectedProperty, _purplePowerupAmount, true);
+            CreateNewPowerupText(_purpleEffectText + (_purplePowerupAmount > 1 ? " x" + _purplePowerupAmount : ""));
+            yield return new WaitForSeconds(_purpleEffectDuration);
+            _purplePowerupAmount--;
+            TriggerEffects(_purpleEffectedProperty, _purplePowerupAmount, false);
+        }
+
         private void TriggerEffects(AffectedProperties properties, float change, bool option)
         {
             switch (properties) {
@@ -76,6 +113,9 @@ namespace Assets.Scripts {
                 case AffectedProperties.Size:
                     _sizeChangeAmount *= option ? change : 1 / change;
                     SizeChange?.Invoke(_sizeChangeAmount);
+                    break;
+                case AffectedProperties.Laser:
+                    LaserBoost?.Invoke(option);
                     break;
             }
         }

@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 
 namespace Assets.Scripts {
-    [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(Rigidbody), typeof(AudioSource))]
     [RequireComponent(typeof(PowerupEffects), typeof(WeaponSystem))]
     public class PlayerShip : MonoBehaviour {
         [Header("Player Movement")]
@@ -48,12 +48,14 @@ namespace Assets.Scripts {
         {
             _powerupEffects.SizeChange += ResizeShip;
             _powerupEffects.SpeedBoost += SetBoosters;
+            _powerupEffects.LaserBoost += BoostLaser;
         }
 
         private void OnDisable()
         {
             _powerupEffects.SizeChange -= ResizeShip;
             _powerupEffects.SpeedBoost -= SetBoosters;
+            _powerupEffects.LaserBoost -= BoostLaser;
         }
 
         private void Start()
@@ -110,8 +112,7 @@ namespace Assets.Scripts {
         public void FireWeapon()
         {
             if (!_isAlive) return;
-            Vector3 hitPosition = _weaponSystem.Fire();
-            _shipParticles.PlayLaserHitParticles(hitPosition);
+            _weaponSystem.Fire(_shipParticles);
             _rb.velocity -= transform.forward / 2;
         }
 
@@ -121,9 +122,9 @@ namespace Assets.Scripts {
             transform.localScale = new Vector3(size, size, size);
         }
 
-        public void SetBoosters(float boost)
+        private void SetBoosters(float boost)
         {
-            _shipParticles.ChangeColor(boost == 0 ? 0 : _currentSpeedBoost < boost ? 1 : -1);
+            _shipParticles.ChangeBoostColor(boost == 0 ? 0 : _currentSpeedBoost < boost ? 1 : -1);
             if (_currentSpeedBoost < boost) {
                 _shipParticles.PlayBoostParticles();
                 float vel = _rb.velocity.magnitude;
@@ -133,6 +134,12 @@ namespace Assets.Scripts {
                 _rb.velocity -= transform.forward * boost;
             }
             _currentSpeedBoost = boost;
+        }
+
+        private void BoostLaser(bool action)
+        {
+            _shipParticles.ChangeLaserColor(action ? 1 : -1);
+            _weaponSystem.BoostLaser(action);
         }
 
         public void Kill()

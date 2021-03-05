@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6117123522337966068}
   - component: {fileID: 6710942952823433541}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Art
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -55,7 +55,7 @@ GameObject:
   - component: {fileID: 6117123523082061584}
   - component: {fileID: 6117123523082061585}
   - component: {fileID: 6117123523082061587}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Powerup_Size
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -116,7 +116,7 @@ GameObject:
   - component: {fileID: 6117123524008829737}
   - component: {fileID: 6117123524008829739}
   - component: {fileID: 6117123524008829736}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}

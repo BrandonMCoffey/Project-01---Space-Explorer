@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 145085872411309952}
   - component: {fileID: 145085872411309953}
   - component: {fileID: 5671120747779258757}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Hazard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 145085872411309959}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 6.5, y: 2.12, z: 6.5}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -109,3 +109,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interaction: 0
+  _win: {fileID: 8300000, guid: 449dc6c02eec99e4383559f07f3a435a, type: 3}
+  _death: {fileID: 8300000, guid: de1f43bd6edddec489670bbbf27ea5cc, type: 3}
